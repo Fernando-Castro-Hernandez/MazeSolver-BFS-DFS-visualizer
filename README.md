@@ -276,6 +276,4 @@ Some natural extensions for future work:
 *Instituto Tecnológico de Software*
 ---
 
-## License
 
-MIT License. See `LICENSE` for details.
