@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BFS vs DFS · Resolución de Laberintos</title>
+
+  <!-- Tipografías distintivas: Fraunces (editorial) + JetBrains Mono (técnico) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+
+  <!-- ==========================================
+       ENCABEZADO: título + subtítulo editorial
+       ========================================== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-meta">
+        <span class="meta-item">Estructura de Datos · Proyecto 3</span>
+        <span class="meta-dot">·</span>
+        <span class="meta-item">Instituto Tecnológico de Software</span>
+      </div>
+      <h1 class="site-title">
+        <span class="title-line">Breadth-First Search</span>
+        <span class="title-vs">vs</span>
+        <span class="title-line">Depth-First Search</span>
+      </h1>
+      <p class="site-subtitle">
+        Estudio comparativo de dos estrategias clásicas de recorrido aplicadas
+        a la resolución de laberintos. La elección de la estructura de datos
+        —cola o pila— determina el comportamiento del algoritmo.
+      </p>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       BARRA DE CONTROLES
+       ========================================== -->
+  <section class="controls" aria-label="Controles del laberinto">
+    <div class="controls-inner">
+
+      <div class="control-group">
+        <label class="control-label">Generar</label>
+        <div class="control-row">
+          <select id="maze-type" class="select">
+            <option value="perfect">Perfecto</option>
+            <option value="loopy">Con ciclos</option>
+            <option value="open">Abierto</option>
+          </select>
+          <select id="maze-size" class="select">
+            <option value="11">11 × 11</option>
+            <option value="15">15 × 15</option>
+            <option value="21" selected>21 × 21</option>
+            <option value="31">31 × 31</option>
+            <option value="41">41 × 41</option>
+          </select>
+          <button id="btn-generate" class="btn btn-primary">
+            <span class="btn-icon">✦</span> Generar
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Editar</label>
+        <div class="control-row tool-row">
+          <button class="tool-btn active" data-tool="wall">
+            <span class="tool-dot" style="background:#0f172a"></span>
+            Pared
+          </button>
+          <button class="tool-btn" data-tool="free">
+            <span class="tool-dot" style="background:#ffffff;border:1px solid #d1cfc4"></span>
+            Borrar
+          </button>
+          <button class="tool-btn" data-tool="start">
+            <span class="tool-dot" style="background:#059669"></span>
+            Inicio
+          </button>
+          <button class="tool-btn" data-tool="end">
+            <span class="tool-dot" style="background:#dc2626"></span>
+            Meta
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Modo</label>
+        <div class="control-row">
+          <div class="segmented">
+            <input type="radio" name="mode" id="mode-instant" value="instant" checked />
+            <label for="mode-instant">Instantáneo</label>
+            <input type="radio" name="mode" id="mode-animated" value="animated" />
+            <label for="mode-animated">Animado</label>
+          </div>
+          <div class="slider-wrap" id="speed-wrap">
+            <label for="speed" class="slider-label">Velocidad</label>
+            <input type="range" id="speed" min="1" max="100" value="60" />
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group actions">
+        <button id="btn-solve" class="btn btn-solid">
+          Resolver
+        </button>
+        <button id="btn-clear" class="btn btn-ghost">
+          Limpiar
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==========================================
+       ÁREA PRINCIPAL: dos canvas lado a lado
+       ========================================== -->
+  <main class="workspace">
+
+    <article class="maze-panel" data-algo="bfs">
+      <header class="panel-header">
+        <div class="panel-id">
+          <span class="panel-number">01</span>
+          <span class="panel-tag">Cola · FIFO</span>
+        </div>
+        <h2 class="panel-title">BFS</h2>
+        <p class="panel-sub">Breadth-First Search</p>
+      </header>
+      <div class="canvas-wrap">
+        <canvas id="canvas-bfs"></canvas>
+        <div class="canvas-legend">
+          <span><i style="background:#059669"></i>Inicio</span>
+          <span><i style="background:#dc2626"></i>Meta</span>
+          <span><i style="background:#fbbf24"></i>Explorado</span>
+          <span><i style="background:#2563eb"></i>Camino</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="maze-panel" data-algo="dfs">
+      <header class="panel-header">
+        <div class="panel-id">
+          <span class="panel-number">02</span>
+          <span class="panel-tag">Pila · LIFO</span>
+        </div>
+        <h2 class="panel-title">DFS</h2>
+        <p class="panel-sub">Depth-First Search</p>
+      </header>
+      <div class="canvas-wrap">
+        <canvas id="canvas-dfs"></canvas>
+        <div class="canvas-legend">
+          <span><i style="background:#059669"></i>Inicio</span>
+          <span><i style="background:#dc2626"></i>Meta</span>
+          <span><i style="background:#fbbf24"></i>Explorado</span>
+          <span><i style="background:#2563eb"></i>Camino</span>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ==========================================
+       MÉTRICAS: ficha técnica comparativa
+       ========================================== -->
+  <section class="metrics" aria-label="Métricas comparativas">
+    <header class="metrics-header">
+      <h3>Ficha técnica</h3>
+      <span class="metrics-sub">Resultados de la ejecución</span>
+    </header>
+
+    <div class="metrics-grid">
+      <!-- Fila de encabezado -->
+      <div class="metric-header-row">
+        <div class="metric-label">Métrica</div>
+        <div class="metric-value bfs-col">BFS</div>
+        <div class="metric-value dfs-col">DFS</div>
+        <div class="metric-note">Observación</div>
+      </div>
+
+      <!-- Filas de datos (se llenan desde JS) -->
+      <div class="metric-row">
+        <div class="metric-label">Camino encontrado</div>
+        <div class="metric-value bfs-col" id="m-bfs-found">—</div>
+        <div class="metric-value dfs-col" id="m-dfs-found">—</div>
+        <div class="metric-note" id="m-found-note">—</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-label">Longitud del camino</div>
+        <div class="metric-value bfs-col" id="m-bfs-path">—</div>
+        <div class="metric-value dfs-col" id="m-dfs-path">—</div>
+        <div class="metric-note" id="m-path-note">—</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-label">Nodos visitados</div>
+        <div class="metric-value bfs-col" id="m-bfs-visited">—</div>
+        <div class="metric-value dfs-col" id="m-dfs-visited">—</div>
+        <div class="metric-note" id="m-visited-note">—</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-label">Frontera máxima</div>
+        <div class="metric-value bfs-col" id="m-bfs-frontier">—</div>
+        <div class="metric-value dfs-col" id="m-dfs-frontier">—</div>
+        <div class="metric-note" id="m-frontier-note">—</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-label">Tiempo de ejecución</div>
+        <div class="metric-value bfs-col" id="m-bfs-time">—</div>
+        <div class="metric-value dfs-col" id="m-dfs-time">—</div>
+        <div class="metric-note" id="m-time-note">—</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-label">Memoria pico</div>
+        <div class="metric-value bfs-col" id="m-bfs-mem">—</div>
+        <div class="metric-value dfs-col" id="m-dfs-mem">—</div>
+        <div class="metric-note" id="m-mem-note">—</div>
+      </div>
+    </div>
+
+    <footer class="metrics-footer">
+      <div class="footer-legend">
+        <span class="legend-dot" style="background:var(--color-bfs)"></span> BFS usa
+        cola (FIFO) y explora por niveles. Garantiza el camino más corto.
+        <span class="footer-sep">·</span>
+        <span class="legend-dot" style="background:var(--color-dfs)"></span> DFS usa
+        pila (LIFO) y explora en profundidad. No garantiza optimalidad.
+      </div>
+    </footer>
+  </section>
+
+  <!-- ==========================================
+       TOAST DE ERRORES
+       ========================================== -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ==========================================
+       FOOTER
+       ========================================== -->
+  <footer class="site-footer">
+    <span>Estructura de Datos · Evaluación 2 · Proyecto Final</span>
+    <span>Fernando · Venus · Eruviel · Mérida, Yucatán</span>
+  </footer>
+
+  <!-- Scripts: se cargan como módulos ES -->
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
