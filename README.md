@@ -1,86 +1,281 @@
-# Laberintos: BFS vs DFS
+# Maze BFS vs DFS Visualizer
 
-Proyecto comparativo de los algoritmos Breadth-First Search y Depth-First Search aplicados a la resolución de laberintos. Frontend interactivo con edición visual, generación automática y animación paso a paso.
+> Interactive web-based maze solver comparing **Breadth-First Search** and **Depth-First Search** side by side. Educational project focused on demonstrating how the choice of data structure (queue vs stack) determines algorithmic behavior.
 
-## Estructura
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E?logo=javascript&logoColor=black)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## About
+
+This project was built for the *Data Structures* course at **Instituto Tecnológico de Software** (CCT 31PSU0097H) as the final evaluation of the subject. It explores one of the most elegant demonstrations in computer science: how two algorithms with nearly identical code can produce dramatically different results based solely on their underlying data structure.
+
+The project implements both **BFS** (using a queue) and **DFS** (using a stack) to solve mazes, visualizes their exploration step-by-step in real time, and measures their performance across four dimensions: path length, exploration order, memory usage, and execution time.
+
+**Key insight:** the only real difference between the two algorithms is `queue.popleft()` versus `stack.pop()` — a single line of code. Yet this one change transforms an algorithm that *guarantees* the shortest path into one that *does not*.
+
+---
+
+## Features
+
+- **Three maze types:** perfect (single path), loopy (multiple paths), and open (no walls).
+- **Interactive editor:** click and drag to draw walls, place start and end points with the mouse.
+- **Two visualization modes:**
+  - *Instant* — shows final result immediately.
+  - *Animated* — step-by-step exploration with adjustable speed.
+- **Side-by-side comparison:** both algorithms run on the same maze, rendered in parallel.
+- **Real-time metrics:** path length, nodes visited, maximum frontier size, execution time (`time.perf_counter()`), and peak memory usage (`tracemalloc`).
+- **Automatic maze generation:** DFS-with-backtracking for perfect mazes, with configurable size and seed for reproducibility.
+
+---
+
+## Tech Stack
+
+**Backend**
+- Python 3.10+
+- Flask (REST API)
+- flask-cors
+- `collections.deque` (BFS queue)
+- `tracemalloc` (memory profiling)
+- `time.perf_counter()` (high-precision timing)
+
+**Frontend**
+- Vanilla JavaScript (ES modules)
+- HTML5 Canvas
+- CSS with custom properties (no frameworks)
+- Custom typography (Fraunces + JetBrains Mono)
+
+No build step, no transpilation, no bundler. The project runs with a single `python app.py` command.
+
+---
+
+## Architecture
 
 ```
-maze_project/
-├── app.py                  # Servidor Flask (API + sirve el frontend)
-├── requirements.txt
-├── README.md
-│
-├── maze/                   # Backend — lógica de algoritmos
-│   ├── maze.py             # Clase Maze (matriz 2D, grafo implícito)
-│   ├── bfs.py              # BFS con cola (deque)
-│   ├── dfs.py              # DFS iterativo con pila
-│   ├── metrics.py          # Medición de tiempo y memoria
-│   └── generator.py        # Generador de laberintos (3 tipos)
-│
-├── templates/
-│   └── index.html          # Página principal del frontend
-│
-├── static/
-│   ├── css/styles.css      # Estilos (tema editorial técnico)
-│   └── js/
-│       ├── api.js          # Wrapper de la API
-│       ├── maze-canvas.js  # Clase MazeCanvas (dibujo en canvas)
-│       ├── editor.js       # Edición con el cursor
-│       ├── animator.js     # Animación paso a paso
-│       └── main.js         # Orquestador principal
-│
-└── tests/                  # Scripts de prueba
+┌─────────────────────────────────────────────────┐
+│               Frontend (browser)                │
+│  HTML + Canvas + vanilla JS ES modules          │
+│  - Render two mazes side by side                │
+│  - Editor: click/drag to mark start/end/walls   │
+│  - Animate exploration step-by-step             │
+└─────────────────┬───────────────────────────────┘
+                  │  HTTP (JSON)
+                  ↓
+┌─────────────────────────────────────────────────┐
+│         Backend (Python + Flask)                │
+│  ┌───────────────────────────────────────────┐  │
+│  │  REST API (4 endpoints)                   │  │
+│  └───────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────┐  │
+│  │  Algorithm layer                          │  │
+│  │  - Maze (2D matrix, implicit graph)       │  │
+│  │  - BFS (deque-based)                      │  │
+│  │  - DFS (iterative, explicit stack)        │  │
+│  │  - Metrics wrapper (time + memory)        │  │
+│  │  - Maze generator (3 variants)            │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
 ```
 
-## Instalación y ejecución
+---
+
+## Installation
+
+Requires Python 3.10 or higher.
 
 ```bash
+# Clone the repository
+git clone https://github.com/YOUR-USERNAME/maze-bfs-dfs-visualizer.git
+cd maze-bfs-dfs-visualizer
+
+# (Optional) create a virtual environment
+python -m venv venv
+source venv/bin/activate   # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the server
 python app.py
 ```
 
-Abre el navegador en `http://localhost:5000`.
+Open your browser at **http://localhost:5000**.
 
-## Cómo usar el frontend
+---
 
-1. **Generar un laberinto:** elige tipo (perfecto, con ciclos, abierto) y tamaño, presiona "Generar".
-2. **Editar:** selecciona una herramienta (pared, borrar, inicio, meta) y haz click/drag en cualquiera de los dos laberintos. Los cambios se reflejan en ambos automáticamente.
-3. **Elegir modo:** instantáneo (resultado directo) o animado (exploración paso a paso).
-4. **Resolver:** presiona "Resolver". Los dos algoritmos corren en paralelo y se muestran las métricas comparativas.
+## Usage
 
-## Endpoints de la API
+1. **Generate a maze:** choose the type (perfect, loopy, open) and size, then click *Generar*.
+2. **Edit manually:** select a tool (wall, erase, start, end) and click/drag on either maze. Changes are synchronized between both panels.
+3. **Choose visualization mode:** *Instantáneo* for immediate results, *Animado* for step-by-step exploration.
+4. **Solve:** click *Resolver*. Both algorithms run in parallel and metrics appear in the comparison table below.
 
-| Método | Ruta             | Descripción                            |
-|--------|------------------|----------------------------------------|
-| GET    | /                | Sirve el frontend                      |
-| GET    | /api/health      | Verifica que el servidor esté corriendo|
-| POST   | /api/generate    | Genera un laberinto aleatorio          |
-| POST   | /api/solve       | Resuelve con BFS o DFS                 |
-| POST   | /api/compare     | Resuelve con ambos algoritmos          |
+---
 
-## Valores del grid
+## API Reference
 
-| Valor | Significado |
-|-------|-------------|
-| 0     | Celda libre |
-| 1     | Pared       |
-| 2     | Inicio      |
-| 3     | Meta        |
+All endpoints return JSON. The frontend consumes them, but you can also test with `curl` or Postman.
 
-## Complejidad computacional
+### `GET /api/health`
+Health check. Returns `{ "status": "ok", "message": "Maze API is running" }`.
 
-| Algoritmo | Temporal | Espacial | Camino óptimo |
-|-----------|----------|----------|---------------|
-| BFS       | O(V+E)   | O(V)     | Sí            |
-| DFS       | O(V+E)   | O(V)     | No            |
+### `POST /api/generate`
+Generates a random maze.
 
-En un grid de F×C celdas: V = F·C, E ≤ 4V, por lo tanto ambos son O(F·C) en tiempo y espacio.
+```json
+{
+  "rows": 21,
+  "cols": 21,
+  "type": "perfect",
+  "seed": 42
+}
+```
 
-## Tests
+Types: `perfect`, `open`, `loopy`. For `loopy`, an optional `extra_openings` field (0.0 to 1.0) controls how many extra walls are knocked down.
+
+### `POST /api/solve`
+Solves a maze with a single algorithm.
+
+```json
+{
+  "grid": [[2, 0, 1], [0, 0, 0], [1, 0, 3]],
+  "algorithm": "bfs"
+}
+```
+
+Returns path, exploration order, and all metrics.
+
+### `POST /api/compare`
+Runs both algorithms on the same grid and returns both results in one response. This is what the frontend uses for side-by-side comparison.
+
+---
+
+## Project Structure
+
+```
+maze-bfs-dfs-visualizer/
+├── app.py                  # Flask server (API + serves frontend)
+├── requirements.txt
+├── README.md
+│
+├── maze/                   # Backend logic
+│   ├── maze.py             # Maze class (2D matrix, implicit graph)
+│   ├── bfs.py              # BFS with deque
+│   ├── dfs.py              # Iterative DFS with explicit stack
+│   ├── metrics.py          # Time and memory measurement
+│   └── generator.py        # Maze generator (3 variants)
+│
+├── templates/
+│   └── index.html
+│
+├── static/
+│   ├── css/styles.css
+│   └── js/
+│       ├── api.js          # API wrapper
+│       ├── maze-canvas.js  # Canvas rendering class
+│       ├── editor.js       # Cursor interaction
+│       ├── animator.js     # Step-by-step animation
+│       └── main.js         # Entry point
+│
+└── tests/                  # Test scripts for each module
+```
+
+---
+
+## Grid Cell Values
+
+| Value | Meaning   |
+|-------|-----------|
+| 0     | Free cell |
+| 1     | Wall      |
+| 2     | Start     |
+| 3     | End       |
+
+---
+
+## Complexity Analysis
+
+| Algorithm | Time Complexity | Space Complexity | Guarantees Shortest Path |
+|-----------|-----------------|------------------|--------------------------|
+| BFS       | O(V + E)        | O(V)             | Yes                      |
+| DFS       | O(V + E)        | O(V)             | No                       |
+
+For a rectangular grid of R×C cells: V = R·C and E ≤ 4V, so both algorithms run in **O(R·C)** time.
+
+### Experimental Validation
+
+We validated the linear complexity O(V) by running each algorithm on open mazes of increasing size. When N doubles (so V = N² quadruples), the execution time should also quadruple.
+
+| Grid size | V       | BFS time   | DFS time   | BFS path (optimal) | DFS path    |
+|-----------|---------|------------|------------|--------------------|-------------|
+| 10 × 10   | 100     | 0.42 ms    | 0.24 ms    | 18                 | 54 (×3)     |
+| 20 × 20   | 400     | 1.75 ms    | 4.83 ms    | 38                 | 190 (×5)    |
+| 40 × 40   | 1,600   | 7.05 ms    | 4.58 ms    | 78                 | 780 (×10)   |
+| 80 × 80   | 6,400   | 35.99 ms   | 22.64 ms   | 158                | 3,160 (×20) |
+| 160 × 160 | 25,600  | 148.52 ms  | 104.40 ms  | 318                | 12,720 (×40)|
+
+BFS time roughly quadruples every time V quadruples (ratios: 4.16, 4.03, 5.10, 4.13), confirming the O(V) bound.
+
+More strikingly, on open mazes DFS finds paths up to **40× longer** than the optimal path found by BFS — a clear illustration of why BFS is preferable for pathfinding even though both algorithms share the same asymptotic complexity.
+
+---
+
+## The Key Insight
+
+The entire project can be reduced to a single line of code:
+
+```python
+# BFS                        # DFS
+current = queue.popleft()    current = stack.pop()
+```
+
+Everything else in both algorithms is identical. `popleft()` removes the *oldest* element (FIFO — queue), `pop()` removes the *most recent* element (LIFO — stack). This single difference is what produces all the observed divergence in behavior:
+
+- BFS explores in expanding waves (by level), DFS follows one direction until hitting a dead end.
+- BFS always finds the shortest path; DFS does not.
+- BFS tends to have a wider frontier; DFS tends to have a deeper stack.
+
+This project exists to demonstrate that **the data structure is the algorithm**.
+
+---
+
+## Running the Tests
+
+The `tests/` folder contains experimental scripts that validate correctness and generate the performance data shown above:
 
 ```bash
-python -m tests.test_comparison   # comparación BFS vs DFS
-python -m tests.test_metrics      # experimento de escalabilidad
-python -m tests.test_generator    # pruebas del generador
-python -m tests.test_api          # pruebas de la API
+python -m tests.test_comparison   # BFS vs DFS side-by-side comparison
+python -m tests.test_metrics      # Scalability experiment
+python -m tests.test_generator    # Maze generator tests
+python -m tests.test_api          # API endpoint tests
 ```
+
+---
+
+## Possible Extensions
+
+Some natural extensions for future work:
+
+- **A\*** — heuristic search that combines BFS with a distance-to-goal estimate, finding optimal paths faster on large grids.
+- **Dijkstra's algorithm** — BFS generalized to weighted graphs (where cells have different traversal costs).
+- **Bidirectional BFS** — run BFS from both start and end simultaneously, meeting in the middle.
+- **Weighted mazes** — cells with different traversal costs (e.g., terrain difficulty).
+
+---
+
+## Authors
+
+- **Fernando** — Mérida, Yucatán
+- **Venus**
+- **Eruviel**
+
+*Data Structures · Evaluation 2 · Final Project*
+*Instituto Tecnológico de Software*
+---
+
+## License
+
+MIT License. See `LICENSE` for details.
