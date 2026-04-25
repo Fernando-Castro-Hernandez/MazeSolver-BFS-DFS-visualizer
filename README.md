@@ -5,13 +5,13 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E?logo=javascript&logoColor=black)
-![License](https://img.shields.io/badge/license-MIT-green)
+
 
 ---
 
 ## About
 
-This project was built for the *Data Structures* course at **Instituto Tecnológico de Software** (CCT 31PSU0097H) as the final evaluation of the subject. It explores one of the most elegant demonstrations in computer science: how two algorithms with nearly identical code can produce dramatically different results based solely on their underlying data structure.
+This project was built for the *Data Structures* course at **Instituto Tecnológico de Software** as the final evaluation of the subject. It explores one of the most elegant demonstrations in computer science: how two algorithms with nearly identical code can produce dramatically different results based solely on their underlying data structure.
 
 The project implements both **BFS** (using a queue) and **DFS** (using a stack) to solve mazes, visualizes their exploration step-by-step in real time, and measures their performance across four dimensions: path length, exploration order, memory usage, and execution time.
 
@@ -88,8 +88,8 @@ Requires Python 3.10 or higher.
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR-USERNAME/maze-bfs-dfs-visualizer.git
-cd maze-bfs-dfs-visualizer
+git clone https://github.com/YOUR-USERNAME/MazeSolver-BFS-DFS-visualizer.git
+cd MazeSolver-BFS-DFS-visualizer
 
 # (Optional) create a virtual environment
 python -m venv venv
@@ -185,86 +185,6 @@ maze-bfs-dfs-visualizer/
 
 ---
 
-## Grid Cell Values
-
-| Value | Meaning   |
-|-------|-----------|
-| 0     | Free cell |
-| 1     | Wall      |
-| 2     | Start     |
-| 3     | End       |
-
----
-
-## Complexity Analysis
-
-| Algorithm | Time Complexity | Space Complexity | Guarantees Shortest Path |
-|-----------|-----------------|------------------|--------------------------|
-| BFS       | O(V + E)        | O(V)             | Yes                      |
-| DFS       | O(V + E)        | O(V)             | No                       |
-
-For a rectangular grid of R×C cells: V = R·C and E ≤ 4V, so both algorithms run in **O(R·C)** time.
-
-### Experimental Validation
-
-We validated the linear complexity O(V) by running each algorithm on open mazes of increasing size. When N doubles (so V = N² quadruples), the execution time should also quadruple.
-
-| Grid size | V       | BFS time   | DFS time   | BFS path (optimal) | DFS path    |
-|-----------|---------|------------|------------|--------------------|-------------|
-| 10 × 10   | 100     | 0.42 ms    | 0.24 ms    | 18                 | 54 (×3)     |
-| 20 × 20   | 400     | 1.75 ms    | 4.83 ms    | 38                 | 190 (×5)    |
-| 40 × 40   | 1,600   | 7.05 ms    | 4.58 ms    | 78                 | 780 (×10)   |
-| 80 × 80   | 6,400   | 35.99 ms   | 22.64 ms   | 158                | 3,160 (×20) |
-| 160 × 160 | 25,600  | 148.52 ms  | 104.40 ms  | 318                | 12,720 (×40)|
-
-BFS time roughly quadruples every time V quadruples (ratios: 4.16, 4.03, 5.10, 4.13), confirming the O(V) bound.
-
-More strikingly, on open mazes DFS finds paths up to **40× longer** than the optimal path found by BFS — a clear illustration of why BFS is preferable for pathfinding even though both algorithms share the same asymptotic complexity.
-
----
-
-## The Key Insight
-
-The entire project can be reduced to a single line of code:
-
-```python
-# BFS                        # DFS
-current = queue.popleft()    current = stack.pop()
-```
-
-Everything else in both algorithms is identical. `popleft()` removes the *oldest* element (FIFO — queue), `pop()` removes the *most recent* element (LIFO — stack). This single difference is what produces all the observed divergence in behavior:
-
-- BFS explores in expanding waves (by level), DFS follows one direction until hitting a dead end.
-- BFS always finds the shortest path; DFS does not.
-- BFS tends to have a wider frontier; DFS tends to have a deeper stack.
-
-This project exists to demonstrate that **the data structure is the algorithm**.
-
----
-
-## Running the Tests
-
-The `tests/` folder contains experimental scripts that validate correctness and generate the performance data shown above:
-
-```bash
-python -m tests.test_comparison   # BFS vs DFS side-by-side comparison
-python -m tests.test_metrics      # Scalability experiment
-python -m tests.test_generator    # Maze generator tests
-python -m tests.test_api          # API endpoint tests
-```
-
----
-
-## Possible Extensions
-
-Some natural extensions for future work:
-
-- **A\*** — heuristic search that combines BFS with a distance-to-goal estimate, finding optimal paths faster on large grids.
-- **Dijkstra's algorithm** — BFS generalized to weighted graphs (where cells have different traversal costs).
-- **Bidirectional BFS** — run BFS from both start and end simultaneously, meeting in the middle.
-- **Weighted mazes** — cells with different traversal costs (e.g., terrain difficulty).
-
----
 
 ## Authors
 
